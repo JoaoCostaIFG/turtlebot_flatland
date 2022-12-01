@@ -10,13 +10,17 @@ def generate_launch_description():
     #pkg_share = get_package_share_directory("turtlebot_flatland")
     pkg_share = FindPackageShare("turtlebot_flatland")
 
+    laser_topic = LaunchConfiguration("laser_topic")
+    odom_topic = LaunchConfiguration("odom_topic")
+    odom_frame_id = LaunchConfiguration("odom_frame_id")
+    base_frame_id = LaunchConfiguration("base_frame_id")
     global_frame_id = LaunchConfiguration("global_frame_id")
-    min_obstacle_height = LaunchConfiguration("min_obstacle_height")
-    max_obstacle_height = LaunchConfiguration("max_obstacle_height")
 
     initial_pose_x = LaunchConfiguration("initial_pose_x")
     initial_pose_y = LaunchConfiguration("initial_pose_y")
     initial_pose_a = LaunchConfiguration("initial_pose_a")
+    min_obstacle_height = LaunchConfiguration("min_obstacle_height")
+    max_obstacle_height = LaunchConfiguration("max_obstacle_height")
 
     world_path = LaunchConfiguration("world_path")
     update_rate = LaunchConfiguration("update_rate")
@@ -98,13 +102,40 @@ def generate_launch_description():
                 ],
             ),
             Node(
+                name="amcl",
+                package="nav2_amcl",
+                executable="amcl",
+                output='screen',
+                parameters=[
+                    {"scan_topic": laser_topic},
+                    {"odom_frame_id": odom_frame_id},
+                    {"global_frame_id": global_frame_id},
+                    {"base_frame_id": base_frame_id},
+                    {"set_initial_pose": True},
+                    {"initial_pose": {"x": initial_pose_x, "y": initial_pose_y, "z": 0.0, "yaw": initial_pose_a}},
+                ],
+            ),
+            Node(
+                name="bt_navigator",
+                package="nav2_bt_navigator",
+                executable="bt_navigator",
+                output='screen',
+                parameters=[
+                    {"odom_topic": odom_topic},
+                    {"global_frame": global_frame_id},
+                    {"base_frame": base_frame_id},
+                    {"default_nav_to_pose_bt_xml": PathJoinSubstitution([pkg_share, "launch/bt.xml"])},
+                    {"default_nav_through_poses_bt_xml": PathJoinSubstitution([pkg_share, "launch/bt.xml"])},
+                ],
+            ),
+            Node(
                 name='lifecycle_manager_navigation',
                 package='nav2_lifecycle_manager',
                 executable='lifecycle_manager',
                 output='screen',
                 parameters=[
                     {'autostart': False},
-                    {'node_names': ["map_server"]},
+                    {'node_names': ["map_server", "amcl", "bt_navigator"]},
                 ],
             ),
             Node(
