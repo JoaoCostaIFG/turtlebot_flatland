@@ -22,6 +22,10 @@ def generate_launch_description():
     min_obstacle_height = LaunchConfiguration("min_obstacle_height")
     max_obstacle_height = LaunchConfiguration("max_obstacle_height")
 
+    initial_pose_x = LaunchConfiguration("initial_pose_x")
+    initial_pose_y = LaunchConfiguration("initial_pose_y")
+    initial_pose_a = LaunchConfiguration("initial_pose_a")
+
     world_path = LaunchConfiguration("world_path")
     update_rate = LaunchConfiguration("update_rate")
     step_size = LaunchConfiguration("step_size")
